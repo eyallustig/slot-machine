@@ -43,6 +43,7 @@ const SLOT_CONTAINER = {
     height: 568,
   },
 };
+const BG_MUSIC_KEY = "BG_Music";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -59,9 +60,14 @@ export default class GameScene extends Phaser.Scene {
     this.load.image(RED_POTION.key, "assets/red_potion.png");
     this.load.image(PURPLE_POTION.key, "assets/purple_potion.png");
     this.load.image(SLOT_CONTAINER.key, "assets/slotContainer.png");
+
+    this.load.audio(BG_MUSIC_KEY, "assets/BG_Music.wav");
   }
 
   create() {
+    // Music_BG should play in a loop in the background
+    this.playBackgroundMusic();
+
     this.add.image(
       GAME_DIMENSIONS.width / 2,
       GAME_DIMENSIONS.height / 2,
@@ -70,6 +76,11 @@ export default class GameScene extends Phaser.Scene {
 
     // Add spin button
     this.addSpinBtn();
+  }
+
+  playBackgroundMusic() {
+    let backgroundMusic = this.sound.add(BG_MUSIC_KEY, { loop: true });
+    backgroundMusic.play();
   }
 
   addSpinBtn() {
@@ -88,11 +99,9 @@ export default class GameScene extends Phaser.Scene {
 
     // By clicking the spin button while the slot is moving it should change to Stop
     if (this.isSpinning) {
-      console.log(`Slot is moving, change button to stop`)
+      console.log(`Slot is moving, change button to stop`);
       this.btn.setTexture(BUTTON_STOP.key);
-    } 
-    
-    else {
+    } else {
       console.log(`Slot is starting to move`);
       console.log(`Disabling the button for 1 sec`);
       this.isSpinning = true;
