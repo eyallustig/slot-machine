@@ -29,6 +29,7 @@ const SLOT_CONTAINER = {
 };
 const BG_MUSIC_KEY = "BG_Music";
 const SPIN_MUSIC_KEY = "Spin_Music";
+const BACKGROUND_IMG_KEY = "background";
 const NUM_OF_REELS = 5;
 
 export default class GameScene extends Phaser.Scene {
@@ -44,6 +45,7 @@ export default class GameScene extends Phaser.Scene {
     this.load.image(SLOT_CONTAINER.key, "assets/slotContainer.png");
     this.load.image(BUTTON_SPIN.key, "assets/button_spin.png");
     this.load.image(BUTTON_STOP.key, "assets/button_stop.png");
+    this.load.image(BACKGROUND_IMG_KEY, "assets/background.png");
     this.load.audio(BG_MUSIC_KEY, "assets/BG_Music.wav");
     this.load.audio(SPIN_MUSIC_KEY, "assets/Spin.wav");
 
@@ -65,8 +67,8 @@ export default class GameScene extends Phaser.Scene {
     // Play music background in a loop
     this.playBackgroundMusic();
 
-    // Add slot container
-    this.addSlotContainer();
+    // Add background and slot container images
+    this.addImg();
 
     // Add spin button
     this.addSpinBtn();
@@ -78,7 +80,12 @@ export default class GameScene extends Phaser.Scene {
     this.createReelSpinAnim();
   }
 
-  addSlotContainer() {
+  addImg() {
+    this.add.image(
+      GAME_DIMENSIONS.width / 2,
+      GAME_DIMENSIONS.height / 2,
+      BACKGROUND_IMG_KEY
+    );
     this.add.image(
       GAME_DIMENSIONS.width / 2,
       GAME_DIMENSIONS.height / 2,
@@ -160,7 +167,7 @@ export default class GameScene extends Phaser.Scene {
       // Clicking the stop button while the slot is moving
       else {
         // Stop all reels together
-        this.stopReels();
+        this.stopReelsTogether();
         // Return the button to its initial state
         this.initBtn();
       }
@@ -180,10 +187,24 @@ export default class GameScene extends Phaser.Scene {
           console.log(`Enabling the button`);
         },
       });
+      this.time.addEvent({
+        delay: 2000,
+        callback: this.stopReelsOneByOne.bind(this),
+      });
     }
   }
+
+  stopReelsOneByOne() {
+    console.log("2 Seconds have passed");
+    this.reels.forEach((reel, i) => {
+      reel.anims.stopAfterDelay((i + 1) * 300);
+    });
+    this.initBtn();
+    this.isSpinning = false;
+  }
+
   // When stopped, the first row should be with yello potions, second row with red potions and third row with purple potions
-  stopReels() {
+  stopReelsTogether() {
     this.reels.forEach((reel) => {
       reel.anims.stop();
       reel.setFrame("frame4.png");
