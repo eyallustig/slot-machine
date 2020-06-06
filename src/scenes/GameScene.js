@@ -20,22 +20,6 @@ const BUTTON_STOP = {
   key: "stop",
   dimensions: BUTTON_DIMENSIONS,
 };
-const YELLOW_POTION = {
-  key: "yellow",
-  dimensions: POTION_DIMENSIONS,
-};
-const BLUE_POTION = {
-  key: "blue",
-  dimensions: POTION_DIMENSIONS,
-};
-const RED_POTION = {
-  key: "red",
-  dimensions: POTION_DIMENSIONS,
-};
-const PURPLE_POTION = {
-  key: "purple",
-  dimensions: POTION_DIMENSIONS,
-};
 const SLOT_CONTAINER = {
   key: "container",
   dimensions: {
@@ -44,38 +28,105 @@ const SLOT_CONTAINER = {
   },
 };
 const BG_MUSIC_KEY = "BG_Music";
+const SPIN_MUSIC_KEY = "Spin_Music";
+const NUM_OF_REELS = 5;
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super("game-scene");
     this.btn = undefined;
     this.isSpinning = false;
+    this.btnDisplay = "Spin";
+    this.reelsStoppedState = undefined;
   }
 
   preload() {
+    this.load.image(SLOT_CONTAINER.key, "assets/slotContainer.png");
     this.load.image(BUTTON_SPIN.key, "assets/button_spin.png");
     this.load.image(BUTTON_STOP.key, "assets/button_stop.png");
-    this.load.image(YELLOW_POTION.key, "assets/yellow_potion.png");
-    this.load.image(BLUE_POTION.key, "assets/blue_potion.png");
-    this.load.image(RED_POTION.key, "assets/red_potion.png");
-    this.load.image(PURPLE_POTION.key, "assets/purple_potion.png");
-    this.load.image(SLOT_CONTAINER.key, "assets/slotContainer.png");
-
     this.load.audio(BG_MUSIC_KEY, "assets/BG_Music.wav");
+    this.load.audio(SPIN_MUSIC_KEY, "assets/Spin.wav");
+
+    this.loadReels();
+    console.log("REACHEDDD");
+  }
+
+  loadReels() {
+    for (let i = 1; i < NUM_OF_REELS + 1; i++) {
+      this.load.multiatlas(
+        `reel${i}`,
+        `assets/reel${i}/frames.json`,
+        `assets/reel${i}`
+      );
+    }
   }
 
   create() {
-    // Music_BG should play in a loop in the background
+    // Play music background in a loop
     this.playBackgroundMusic();
 
+    // Add slot container
+    this.addSlotContainer();
+
+    // Add spin button
+    this.addSpinBtn();
+
+    // Add reels
+    this.addReels();
+
+    // Create reels spinning animation
+    this.createReelSpinAnim();
+  }
+
+  addSlotContainer() {
     this.add.image(
       GAME_DIMENSIONS.width / 2,
       GAME_DIMENSIONS.height / 2,
       SLOT_CONTAINER.key
     );
+  }
 
-    // Add spin button
-    this.addSpinBtn();
+  createReelSpinAnim() {
+    // Create Frame Names for each reel
+    this.frameNames = [];
+    for (let i = 1; i < NUM_OF_REELS + 1; i++) {
+      this.frameNames[i] = this.anims.generateFrameNames(`reel${i}`, {
+        start: 1,
+        end: 4,
+        prefix: "frame",
+        suffix: ".png",
+      });
+    }
+
+    // Create animation for each reel
+    for (let i = 1; i < NUM_OF_REELS + 1; i++) {
+      this.anims.create({
+        key: `reel${i}Animation`,
+        frames: this.frameNames[i],
+        frameRate: 10,
+        repeat: -1,
+      });
+    }
+  }
+
+  addReels() {
+    this.reels = [];
+    let offsetX = 3;
+    let offsetY = 35;
+    for (let i = 1; i < NUM_OF_REELS + 1; i++) {
+      this.reels.push(
+        this.add.sprite(
+          0.5 * (GAME_DIMENSIONS.width - SLOT_CONTAINER.dimensions.width) +
+            (i - 0.5) * POTION_DIMENSIONS.width +
+            offsetX,
+          0.5 * (GAME_DIMENSIONS.height - SLOT_CONTAINER.dimensions.height) +
+            0.5 * POTION_DIMENSIONS.height +
+            offsetY,
+          `reel${i}`,
+          `frame1.png`
+        )
+      );
+    }
   }
 
   playBackgroundMusic() {
@@ -91,20 +142,34 @@ export default class GameScene extends Phaser.Scene {
         BUTTON_SPIN.key
       )
       .setInteractive();
+    // Handle click event on btn
     this.btn.on("pointerdown", this.handleClickEvent.bind(this));
   }
 
   handleClickEvent() {
     console.log("Button clicked");
 
-    // By clicking the spin button while the slot is moving it should change to Stop
+    // Clicking the button while the slot is spinning
     if (this.isSpinning) {
-      console.log(`Slot is moving, change button to stop`);
-      this.btn.setTexture(BUTTON_STOP.key);
+      // Change the button to stop
+      if (this.btnDisplay === "Spin") {
+        console.log(`Slot is moving, button changed to stop`);
+        this.btnDisplay = "Stop";
+        this.btn.setTexture(BUTTON_STOP.key);
+      }
+      // Clicking the stop button while the slot is moving
+      else {
+        // Stop all reels together
+        this.stopReels();
+        // Return the button to its initial state
+        this.initBtn();
+      }
     } else {
-      console.log(`Slot is starting to move`);
+      console.log(`Slot begins to move`);
       console.log(`Disabling the button for 1 sec`);
       this.isSpinning = true;
+      this.playSpinningAnimations();
+      this.playSpinningMusic();
       this.btn.disableInteractive();
       this.btn.setAlpha(0.5);
       this.time.addEvent({
@@ -116,5 +181,27 @@ export default class GameScene extends Phaser.Scene {
         },
       });
     }
+  }
+  // When stopped, the first row should be with yello potions, second row with red potions and third row with purple potions
+  stopReels() {
+    this.reels.forEach((reel) => {
+      reel.anims.stop();
+      reel.setFrame("frame4.png");
+    });
+    this.isSpinning = false;
+  }
+  // Return the button to its initial state
+  initBtn() {
+    this.btn.setTexture(BUTTON_SPIN.key);
+    this.btnDisplay = "Spin";
+  }
+  playSpinningMusic() {
+    let spinMusic = this.sound.add(SPIN_MUSIC_KEY);
+    spinMusic.play();
+  }
+  playSpinningAnimations() {
+    this.reels.forEach((reel, i) => {
+      reel.play(`reel${i + 1}Animation`);
+    });
   }
 }
