@@ -48,7 +48,7 @@ export default class GameScene extends Phaser.Scene {
     this.createReelSpinAnim();
 
     // Add the result text
-    this.addResult();
+    this.addResultText();
   }
 
   // Foreach reel, load texture atlas to create the reels spinning animation
@@ -82,13 +82,13 @@ export default class GameScene extends Phaser.Scene {
     );
   }
 
-  addResult() {
+  addResultText() {
     this.resultText = this.add.text(
       constants.GAME_DIMENSIONS.width / 2 -
         constants.SLOT_CONTAINER.dimensions.width / 2,
       constants.GAME_DIMENSIONS.height / 2 -
         constants.SLOT_CONTAINER.dimensions.height / 2 +
-        20,
+        constants.RESULT_TEXT_OFFSET_Y,
       "Result: 0",
       {
         fontSize: "32px",
@@ -104,6 +104,7 @@ export default class GameScene extends Phaser.Scene {
     // Create animation for each reel
     this.createAnimations();
   }
+
   createAnimations() {
     for (let i = 1; i < constants.NUM_OF_REELS + 1; i++) {
       this.anims.create({
@@ -114,6 +115,7 @@ export default class GameScene extends Phaser.Scene {
       });
     }
   }
+
   createFrameNames() {
     this.frameNames = [];
     for (let i = 1; i < constants.NUM_OF_REELS + 1; i++) {
@@ -161,6 +163,7 @@ export default class GameScene extends Phaser.Scene {
       this.addReelsStopEvent();
     }
   }
+
   // When the player presses Spin, after 2 seconds the slot should stop the reels 1 by 1.
   addReelsStopEvent() {
     this.reelsStopTimedEvent = this.time.addEvent({
@@ -180,7 +183,7 @@ export default class GameScene extends Phaser.Scene {
     this.initSlotMachine();
   }
 
-  // Initiallize the slot machine state
+  // Initiallize the slot machine
   initSlotMachine() {
     this.isReelsSpinning = false;
     this.initBtn();
@@ -194,12 +197,14 @@ export default class GameScene extends Phaser.Scene {
     this.playSpinningAnimations();
     this.playSpinningMusic();
   }
+
   disableButton() {
     this.btn.disableInteractive();
     // Set button opacity to 50%
     this.btn.setAlpha(0.5);
     this.addButtonEnabledEvent();
   }
+
   // After 1 second from clicking play the button become enabled again
   addButtonEnabledEvent() {
     this.time.addEvent({
@@ -236,6 +241,7 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  // Stop the reels one by one after delay interval
   stopReelsOneByOne() {
     this.reels.forEach((reel, i) => {
       reel.anims.stopAfterDelay((i + 1) * constants.STOP_REELS_INTERVAL_DELAY);
@@ -253,10 +259,12 @@ export default class GameScene extends Phaser.Scene {
     this.btn.setTexture(constants.BUTTON_SPIN.key);
     this.btnDisplay = "Spin";
   }
+
   playSpinningMusic() {
     this.spinMusic = this.sound.add(constants.SPIN_MUSIC_KEY);
     this.spinMusic.play();
   }
+
   // Foreach reel, play its spinning animation
   playSpinningAnimations() {
     this.reels.forEach((reel, i) => {
