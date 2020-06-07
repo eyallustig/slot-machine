@@ -18,14 +18,14 @@ export default class GameScene extends Phaser.Scene {
 
   preload() {
     // Load image files
-    this.load.image(constants.SLOT_CONTAINER.key, "assets/slotContainer.png");
-    this.load.image(constants.BUTTON_SPIN.key, "assets/button_spin.png");
-    this.load.image(constants.BUTTON_STOP.key, "assets/button_stop.png");
-    this.load.image(constants.BACKGROUND_IMG_KEY, "assets/background.png");
+    this.load.image(constants.SLOT_CONTAINER.key, "images/slotContainer.png");
+    this.load.image(constants.BUTTON_SPIN.key, "images/button_spin.png");
+    this.load.image(constants.BUTTON_STOP.key, "images/button_stop.png");
+    this.load.image(constants.BACKGROUND_IMG_KEY, "images/background.png");
 
     // Load audio files
-    this.load.audio(constants.BG_MUSIC_KEY, "assets/BG_Music.wav");
-    this.load.audio(constants.SPIN_MUSIC_KEY, "assets/Spin.wav");
+    this.load.audio(constants.BG_MUSIC_KEY, "music/BG_Music.wav");
+    this.load.audio(constants.SPIN_MUSIC_KEY, "music/Spin.wav");
 
     // Load texture atlas for the reels spinning animations
     this.loadTextureAtlas();
@@ -56,8 +56,8 @@ export default class GameScene extends Phaser.Scene {
     for (let i = 1; i < constants.NUM_OF_REELS + 1; i++) {
       this.load.multiatlas(
         `reel${i}`,
-        `assets/reel${i}/frames.json`,
-        `assets/reel${i}`
+        `texture_atlas/reel${i}/frames.json`,
+        `texture_atlas/reel${i}`
       );
     }
   }
@@ -109,7 +109,7 @@ export default class GameScene extends Phaser.Scene {
       this.anims.create({
         key: `reel${i}Animation`,
         frames: this.frameNames[i],
-        frameRate: 15,
+        frameRate: 12,
         repeat: -1,
       });
     }

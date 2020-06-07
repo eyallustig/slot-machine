@@ -32,6 +32,6 @@ export const NUM_OF_REELS = 5;
 export const BUTTON_ENABLE_DELAY = 1000;
 export const STOP_REELS_FRAME_INDEX = 3;
 export const STOP_REELS_DELAY = 2000;
-export const STOP_REELS_INTERVAL_DELAY = 500;
+export const STOP_REELS_INTERVAL_DELAY = 600;
 export const REELS_OFFSET_X = 3;
 export const REELS_OFFSET_Y = 35;
