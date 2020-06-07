@@ -39,6 +39,8 @@ export default class GameScene extends Phaser.Scene {
     this.isSpinning = false;
     this.btnDisplay = "Spin";
     this.reelsStoppedState = undefined;
+    this.timerEvents = [];
+    this.timerEventsCounter = 0;
   }
 
   preload() {
@@ -50,7 +52,6 @@ export default class GameScene extends Phaser.Scene {
     this.load.audio(SPIN_MUSIC_KEY, "assets/Spin.wav");
 
     this.loadReels();
-    console.log("REACHEDDD");
   }
 
   loadReels() {
@@ -78,6 +79,19 @@ export default class GameScene extends Phaser.Scene {
 
     // Create reels spinning animation
     this.createReelSpinAnim();
+
+    this.addResult();
+  }
+  addResult() {
+    this.resultText = this.add.text(
+      GAME_DIMENSIONS.width / 2 - SLOT_CONTAINER.dimensions.width / 2,
+      GAME_DIMENSIONS.height / 2 - SLOT_CONTAINER.dimensions.height / 2 + 20,
+      "Result: 0",
+      {
+        fontSize: "32px",
+        fill: "#fff",
+      }
+    );
   }
 
   addImg() {
@@ -110,7 +124,7 @@ export default class GameScene extends Phaser.Scene {
       this.anims.create({
         key: `reel${i}Animation`,
         frames: this.frameNames[i],
-        frameRate: 10,
+        frameRate: 12,
         repeat: -1,
       });
     }
@@ -168,8 +182,6 @@ export default class GameScene extends Phaser.Scene {
       else {
         // Stop all reels together
         this.stopReelsTogether();
-        // Return the button to its initial state
-        this.initBtn();
       }
     } else {
       console.log(`Slot begins to move`);
@@ -187,29 +199,41 @@ export default class GameScene extends Phaser.Scene {
           console.log(`Enabling the button`);
         },
       });
-      this.time.addEvent({
-        delay: 2000,
+      this.timerEvents[this.timerEventsCounter++] = this.time.addEvent({
+        delay: 10000,
         callback: this.stopReelsOneByOne.bind(this),
       });
     }
   }
 
   stopReelsOneByOne() {
-    console.log("2 Seconds have passed");
+    console.log("10 Seconds have passed");
     this.reels.forEach((reel, i) => {
-      reel.anims.stopAfterDelay((i + 1) * 300);
+      reel.anims.stopAfterDelay((i + 1) * 500);
     });
-    this.initBtn();
+
+    this.initSlotMachine();
+  }
+
+  // Initiallize slot machine state
+  initSlotMachine() {
     this.isSpinning = false;
+    this.initBtn();
+    this.StopSpinningMusic();
+    // Remove the event which after 2 seconds the slot should stop the reels 1 by 1
+    this.time.removeAllEvents();
+  }
+
+  StopSpinningMusic() {
+    this.spinMusic.stop();
   }
 
   // When stopped, the first row should be with yello potions, second row with red potions and third row with purple potions
   stopReelsTogether() {
     this.reels.forEach((reel) => {
-      reel.anims.stop();
-      reel.setFrame("frame4.png");
+      reel.anims.stopOnFrame(reel.anims.currentAnim.frames[3]);
     });
-    this.isSpinning = false;
+    this.initSlotMachine();
   }
   // Return the button to its initial state
   initBtn() {
@@ -217,8 +241,8 @@ export default class GameScene extends Phaser.Scene {
     this.btnDisplay = "Spin";
   }
   playSpinningMusic() {
-    let spinMusic = this.sound.add(SPIN_MUSIC_KEY);
-    spinMusic.play();
+    this.spinMusic = this.sound.add(SPIN_MUSIC_KEY);
+    this.spinMusic.play();
   }
   playSpinningAnimations() {
     this.reels.forEach((reel, i) => {
